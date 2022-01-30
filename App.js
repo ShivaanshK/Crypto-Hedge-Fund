@@ -153,7 +153,8 @@ const getCafeSwapExchangeRates = async balances => {
     return amountInDAI
 }
 
-const comparePrices = async (oneInch, apeSwap, cafeSwap) => {
+//Compares the amounts of DAI for each token from each exchange and returns the maximum amounts and the respective exchanges
+const compareAmounts = async (oneInch, apeSwap, cafeSwap) => {
     let maxAmounts = {}
     for (token in tokens) {
         const arr = [oneInch[token], apeSwap[token], cafeSwap[token]]
@@ -169,7 +170,7 @@ const main = async () => {
     const oneInchDAI = await getOneInchExchangeRates(balances)
     const apeSwapDAI = await getApeSwapExchangeRates(balances)
     const cafeSwapDAI = await getCafeSwapExchangeRates(balances)
-    const bestRates = await comparePrices(oneInchDAI, apeSwapDAI, cafeSwapDAI)
+    const bestRates = await compareAmounts(oneInchDAI, apeSwapDAI, cafeSwapDAI)
 
     console.log("Maximum Amount of DAI and the exchange to use for each token:")
     console.log(bestRates)
