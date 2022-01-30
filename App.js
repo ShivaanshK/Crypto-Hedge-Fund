@@ -76,8 +76,6 @@ const getApeSwapExchangeRates = async balances => {
         pair = await apeFactoryContract.methods.getPair(tokens[token], USDC).call()
         if (parseInt(pair, 16) != 0) availablePairsWithUSDC[token] = pair
     }
-    console.log(availablePairsWithDAI)
-    console.log(availablePairsWithUSDC)
 
     amountInDAI = {}
     if (Object.keys(availablePairsWithDAI).length === 0) {
@@ -155,6 +153,9 @@ const getCafeSwapExchangeRates = async balances => {
     return amountInDAI
 }
 
+const comparePrices = async (oneInch, apeSwap, cafeSwap) => {
+
+}
 
 const main = async () => {
     const balances = await getBalances()
