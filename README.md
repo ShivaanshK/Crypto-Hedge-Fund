@@ -1,6 +1,6 @@
 # Diffuse Project
 
-#Instructions to execute the program
+# Instructions to execute the program
 
 Setup:
 Node.js must be installed on your system to run this program
@@ -9,7 +9,7 @@ Execution:
 1. cd into the directory
 2. run `node App.js`
 
-#Task
+# Task
 
 Given a Polygon network wallet address:
 
