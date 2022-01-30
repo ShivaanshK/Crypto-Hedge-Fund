@@ -1,7 +1,13 @@
 # Diffuse Project
 
-#Instructions
+#Instructions to execute the program
 
+Setup:
+Node.js must be installed on your system to run this program
+
+Execution:
+1. cd into the diretory
+2. run `node App.js`
 
 #Task
 
