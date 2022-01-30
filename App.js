@@ -25,9 +25,6 @@ const tokens = {
     'SING': '0xCB898b0eFb084Df14dd8E018dA37B4d0f06aB26D'
 }
 
-
-
-
 const getBalances = async (contracts = tokens, wallet = address) => {
     //JSON object of balances for each token
     let balances = {}
@@ -66,15 +63,50 @@ const getOneInchExchangeRates = async balances => {
 }
 
 const getApeSwapExchangeRates = async balances => {
+    //Create instances of the Apeactory and ApeRouterContracts
     const apeFactoryContract = new web3.eth.Contract(apeFactoryABI, '0xCf083Be4164828f00cAE704EC15a36D711491284')
     const apeRouterContract = new web3.eth.Contract(apeRouterABI, '0xC0788A3aD43d79aa53B09c2EaCc313A787d1d607')
 
-    let factory = await apeRouterContract.methods.factory.call().call()
-    // try{
-    //     console.log(await apeRouterContract.methods.getAmountsOut(2,[Web3.utils.toChecksumAddress'0xCB898b0eFb084Df14dd8E018dA37B4d0f06aB26D', '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063']).call())
-    // } catch(err){
-    //     console.log(err)
-    // }
+    //Shows that ApeSwap has no direct pairs between the tokens and DAI, but it does have somme for USDC
+    availablePairsWithDAI = {}
+    availablePairsWithUSDC = {}
+    for (token in tokens) {
+        let pair = await apeFactoryContract.methods.getPair(tokens[token], DAI).call()
+        if (parseInt(pair, 16) != 0) availablePairsWithDAI[token] = { token: 'DAI', pair }
+        pair = await apeFactoryContract.methods.getPair(tokens[token], USDC).call()
+        if (parseInt(pair, 16) != 0) availablePairsWithUSDC[token] = pair
+    }
+    console.log(availablePairsWithDAI)
+    console.log(availablePairsWithUSDC)
+
+    amountInDAI = {}
+    if (Object.keys(availablePairsWithDAI).length === 0) {
+        //Decimals for USDC and DAI
+        const usdcDecimals = await (new web3.eth.Contract(erc20ABI, USDC)).methods.decimals().call()
+        const daiDecimals = await (new web3.eth.Contract(erc20ABI, DAI)).methods.decimals().call()
+        for (token in availablePairsWithUSDC) {
+            //Decimals for the token
+            const tokenDecimals = await (new web3.eth.Contract(erc20ABI, tokens[token])).methods.decimals().call()
+            //Gets the amount that will be payed out in USD for 1 token
+            const priceInUSDC = await apeRouterContract.methods.getAmountsOut((Math.pow(10, tokenDecimals)).toString(), [tokens[token], USDC]).call()
+            //Calculates the amount that will be payed out for the amount of tokens in balances[token] with the correct amount of decimals
+            const amountInUSDC = (parseFloat(priceInUSDC[1]) / Math.pow(10, usdcDecimals)) * (parseFloat(balances[token]) / Math.pow(10, tokenDecimals))
+
+            //Gets the amount that will be payed out in DAI for 1 USDC
+            const priceInDAI = await apeRouterContract.methods.getAmountsOut((Math.pow(10, usdcDecimals)).toString(), [USDC, DAI]).call()
+            //Calculates the amount that will be payed out for the amountInUSDC with the correct amount of decimals
+            const tokenAmountInDAI = (parseFloat(priceInDAI[1]) / Math.pow(10, daiDecimals)) * amountInUSDC
+
+            amountInDAI[token] = tokenAmountInDAI
+        }
+    }
+
+    //Set the values for the tokens that aren't available to 0
+    for (let token in tokens) {
+        if (!amountInDAI[token]) amountInDAI[token] = 0
+    }
+
+    return amountInDAI
 
 }
 
@@ -129,8 +161,8 @@ const main = async () => {
     console.log(balances)
     const oneInchDAI = await getOneInchExchangeRates(balances)
     console.log(oneInchDAI)
-    // const apeSwapDAI = await getApeSwapExchangeRates(balances)
-    // console.log(apeSwapDAI)
+    const apeSwapDAI = await getApeSwapExchangeRates(balances)
+    console.log(apeSwapDAI)
     const cafeSwapDAI = await getCafeSwapExchangeRates(balances)
     console.log(cafeSwapDAI)
 }
