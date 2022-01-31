@@ -14,7 +14,7 @@ Execution:
 
 For simplicity, the program calls the `main()` function which in turn calls the helper functions to produce the output. In order to interact with the Polygon Network and its smart contracts, I use web3.js and connect it to https://polygon-rpc.com/. 
 
-First, we have to retrieve the balances of each of the tokens provided: we do this by instantiating the ERC20 contract for each of these contracts and calling the `balanceOf()` method with the wallet address as the sole parameter. 
+First, we have to retrieve the balances of each of the tokens provided: we do this by instantiating the ERC20 contract for each of these tokens and calling the `balanceOf()` method with the wallet address as the sole parameter. 
 
 Next, we have to find the amount of DAI that each of the exchanges will give for the token balances. For the one 1inch exchange, I used their REST API. First, I retrieved the list of all tokens that are supported by them. Then, for all the available tokens, I requested a quote for how much DAI we would receive for the balance of the token. For the Apeswap and Cafeswap exchanges, I realized that there were no direct pairs between the tokens and DAI, but some tokens could be swapped for USDC and then DAI. In order to retrieve these values, I interacted with the Factory and Router contracts for each of the exchanges. I used the `getPair()` method from the Factory contracts to check which pairs existed. Then, I called the `getAmountsOut()` method in the Router contracts to retrieve the quotes and did some arithmetic to convert it to the actual token value in DAI. The `getApeSwapExchangeRates()` and `getCafeSwapExchangeRates()` functions could have been modularized, but for readability and simplicity, I chose not to for now.
 
